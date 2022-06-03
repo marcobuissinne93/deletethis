@@ -23,12 +23,13 @@ st.set_page_config(
 
 
 def human_format(num):
+    tmp = num.copy()
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
     # add more suffixes if you need them
-    if num < 10_000_000:
+    if tmp < 10_000_000:
         return '%.2f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
     else:
         return '%.0f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
