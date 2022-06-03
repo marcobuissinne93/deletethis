@@ -151,8 +151,8 @@ class Simulate:
             successes: int = 0
             failures: int = 0
             investment_counter: int = 0
-            for i in range(1, VALUATION_PERIOD+1):
-                for j in range(DEAL_FREQ):
+            for i in range(1, int(VALUATION_PERIOD)+1):
+                for j in range(int(DEAL_FREQ)):
                     deal = Investment(dfs, i, self.period, self.disc_rate, self.inv_size, self.max_fee)
                     if deal.cagr_rand[0] == 'fail':
                         failures += 1
