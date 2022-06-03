@@ -406,12 +406,12 @@ def build_sim_metrics(x):
         with col_summary6:
             st.metric("Average Premium per cell p.a.", human_format(x['premium_inc_per_investment'].mean()))
         with col_summary7:
-            st.metric("Total Successes", f"{x['successes'].mean()}")
+            st.metric("Total Successes", f"{int(round(x['successes'].mean(),0))}")
         with col_summary8:
-            st.metric("Total Failures", f"{x['failures'].mean()}")
+            st.metric("Total Failures", f"{int(round(x['failures'].mean(),0))}")
 
 
-
+int(round(14.7,0))
 def main():
     ...
 
