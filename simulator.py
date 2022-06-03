@@ -28,71 +28,11 @@ def human_format(num):
         magnitude += 1
         num /= 1000.0
     # add more suffixes if you need them
-    return '%.0f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
+    if num < 10_000_000:
+        return '%.2f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
+    else:
+        return '%.0f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
 
-
-import sqlite3
-import pandas as pd
-
-con = sqlite3.connect("data.db")
-cur = con.cursor()
-cur.execute("DROP TABLE if exists variable_dist_0;")
-data = {'status': ['fail', 'bad', 'average', 'good', 'great'],
-    'cagr': [-0.1, 0.05, 0.1, 0.2, 0.35],
-    'management_fees': [200_000, 200_000, 400_000, 600_000, 800_000],
-    'roe': [0, 2, 4, 8, 15],
-    'distribution': [0.4, 0.15, 0.15, 0.2, 0.1]}
-df = pd.DataFrame(data)
-df.to_sql('variable_dist_0', con=con)
-con.close()
-
-con = sqlite3.connect("data.db")
-cur = con.cursor()
-cur.execute("DROP TABLE if exists variable_dist_1;")
-data = {'status': ['fail', 'bad', 'average', 'good', 'great'],
-    'cagr': [-0.1, 0.05, 0.1, 0.2, 0.35],
-    'management_fees': [200_000, 200_000, 350_000, 600_000, 800_000],
-    'roe': [0, 2, 4, 8, 15],
-    'distribution': [0.3, 0.15, 0.25, 0.2, 0.1]}
-df = pd.DataFrame(data)
-df.to_sql('variable_dist_1', con=con)
-con.close()
-
-con = sqlite3.connect("data.db")
-cur = con.cursor()
-cur.execute("DROP TABLE if exists variable_dist_2;")
-data = {'status': ['fail', 'bad', 'average', 'good', 'great'],
-    'cagr': [-0.1, 0.05, 0.15, 0.25, 0.4],
-    'management_fees': [250_000, 250_000, 400_000, 750_000, 1_000_000],
-    'roe': [0, 2, 5, 10, 18],
-    'distribution': [0.2, 0.15, 0.35, 0.2, 0.1]}
-df = pd.DataFrame(data)
-df.to_sql('variable_dist_2', con=con)
-con.close()
-
-con = sqlite3.connect("data.db")
-cur = con.cursor()
-cur.execute("DROP TABLE if exists variable_dist_3;")
-data = {'status': ['fail', 'bad', 'average', 'good', 'great'],
-    'cagr': [-0.1, 0.05, 0.15, 0.25, 0.5],
-    'management_fees': [250_000, 250_000, 500_000, 800_000, 1_100_000],
-    'roe': [0, 2, 5, 10, 20],
-    'distribution': [0.1, 0.15, 0.35, 0.25, 0.15]}
-df = pd.DataFrame(data)
-df.to_sql('variable_dist_3', con=con)
-con.close()
-
-con = sqlite3.connect("data.db")
-cur = con.cursor()
-cur.execute("DROP TABLE if exists variable_dist_4;")
-data = {'status': ['fail', 'bad', 'average', 'good', 'great'],
-    'cagr': [-0.1, 0.05, 0.15, 0.25, 0.5],
-    'management_fees': [250_000, 250_000, 600_000, 800_000, 1_100_000],
-    'roe': [0, 2, 5, 10, 20],
-    'distribution': [0.05, 0.18, 0.37, 0.25, 0.15]}
-df = pd.DataFrame(data)
-df.to_sql('variable_dist_4', con=con)
-con.close()
 
 
 def reset_vars(): 
