@@ -23,7 +23,7 @@ st.set_page_config(
 
 
 def human_format(num):
-    tmp = num.copy()
+    tmp = num
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
