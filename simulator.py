@@ -327,7 +327,7 @@ def build_sim_metrics(x):
     valuation_man_fees_total: List[float] = [x[f'total_terminal_fee{i}'].mean() * PE_ratio for i in range(4)]
     valuation_equity_total: List[float] = [x[f'total_equity_valuation{i}'].mean() for i in range(4)]
     variable_expenses = INVESTMENT_EXPENSES_PER_DEAL * VALUATION_PERIOD * DEAL_FREQ
-    opex_total = sum([OPERATIONAL_EXPENSES*pow((1 + OPEX_INFLATION), i) for i in range(VALUATION_PERIOD)])
+    opex_total = sum([OPERATIONAL_EXPENSES*pow((1 + OPEX_INFLATION), i) for i in range(int(VALUATION_PERIOD))])
     net_invested: List[float] = [(valuation_man_fees_total[i] + valuation_equity_total[i] - (x['total_invested'].mean() + variable_expenses + opex_total)) for i in range(4)]
     x["total_valuation_value"] = (x['total_terminal_fee0'] * PE_ratio) + x['total_equity_valuation0'] - (x['total_invested'] + variable_expenses + opex_total)
 
