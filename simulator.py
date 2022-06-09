@@ -73,7 +73,7 @@ def get_dist_vars(_type):
     return df 
 
 
-st.sidebar.subheader("Global Variables")
+st.sidebar.subheader("Global Variable")
 VALUATION_PERIOD: int = st.sidebar.number_input("Valuation Period", min_value=2, max_value=8, value=5)
 INVESTMENT_EXPENSES_PER_DEAL: float = 250_000 #st.sidebar.number_input("Expense per Deal", min_value=100_000, max_value=1_000_000, value=500_000)
 OPERATIONAL_EXPENSES: float = 1_300_000 # p.a.
