@@ -79,7 +79,7 @@ def get_dist_vars(_type):
     return df 
 
 
-st.sidebar.subheader("Global Variables")
+st.sidebar.subheader("Global Variable")
 VALUATION_PERIOD: int = st.sidebar.number_input("Valuation Period", min_value=2, max_value=8, value=5)
 OPEX_INFLATION: float = 0.05 # p.a.
 DEAL_FREQ: int = st.sidebar.number_input("Deal Volume", min_value=2, max_value=10, value=5)
