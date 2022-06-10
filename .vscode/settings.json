@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "data",
+            "database": "${workspaceFolder:LP Value Model}/data.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

@@ -1,3 +1,4 @@
+from soupsieve import select
 import streamlit as st
 import pandas as pd 
 import numpy as np
@@ -30,9 +31,11 @@ def human_format(num):
         num /= 1000.0
     # add more suffixes if you need them
     if tmp < 10_000_000:
-        return '%.2f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
+        return '%.2f%s' % (num, ['', 'k', 'm', 'm', 't', 'P'][magnitude])
     else:
-        return '%.0f%s' % (num, ['', 'k', 'm', 'b', 't', 'P'][magnitude])
+        if magnitude == 3:
+            num = num*1000
+        return '{:,}{}'.format(int(num), ['', 'k', 'm', 'm', 't', 'P'][magnitude])
 
 
 
@@ -58,15 +61,18 @@ def save(df):
     df.to_sql('variable_dist', con=con)
     con.close()
 
-DIST_SELECTION: Dict = {'60%': 0, '70%': 1, '80%': 2, '90%': 3, '95%': 4}
+DIST_SELECTION = {}
+INTERMEDIATE: Dict = [DIST_SELECTION.update({f'{x}%': i}) for i, x in enumerate(np.arange(60,100,5))][0]
+
+
 
 def get_dist_vars(_type):
-    cols = ['status', 'cagr', 'management_fees', 'roe', 'distribution']
+    cols = ['isr', 'status', 'cagr', 'management_fees', 'roe', 'distribution', 'type']
     con = sqlite3.connect("data.db")
     cur = con.cursor()
     # var_table_suffix = DIST_SELECTION[_type]
-    df = pd.DataFrame(cur.execute(f"SELECT * FROM variable_dist_{_type}"))
-    df = df.iloc[:, 1:]
+    df = pd.DataFrame(cur.execute(f"SELECT * FROM sim_data WHERE type = {_type}"))
+    # df = df.iloc[:, 1:]
     df.columns = cols
     cur.close()
     con.close()
@@ -75,23 +81,25 @@ def get_dist_vars(_type):
 
 st.sidebar.subheader("Global Variables")
 VALUATION_PERIOD: int = st.sidebar.number_input("Valuation Period", min_value=2, max_value=8, value=5)
-INVESTMENT_EXPENSES_PER_DEAL: float = 250_000 #st.sidebar.number_input("Expense per Deal", min_value=100_000, max_value=1_000_000, value=500_000)
-OPERATIONAL_EXPENSES: float = 1_300_000 # p.a.
 OPEX_INFLATION: float = 0.05 # p.a.
 DEAL_FREQ: int = st.sidebar.number_input("Deal Volume", min_value=2, max_value=10, value=5)
 INVESTMENT_SIZE: float = st.sidebar.number_input("Investment Size per Deal", min_value=1_000_000, max_value=7_500_000, value=3_500_000)
 st.sidebar.caption("Investment size: {:,}".format(INVESTMENT_SIZE))
-DISCOUNT_RATE: float = 0.22 #st.sidebar.number_input("Discount Rate", min_value=0.15, max_value=0.45, value=0.22)
+INVESTMENT_EXPENSES_PER_DEAL: float = st.sidebar.number_input("Variable Expenses per Deal", min_value=50_000, max_value=1_500_000, value=250_000)
+st.sidebar.caption("Variable expenses: {:,}".format(INVESTMENT_EXPENSES_PER_DEAL))
+OPERATIONAL_EXPENSES: float = st.sidebar.number_input("Operational Expenses per Annum", min_value=500_000, max_value=7_500_000, value=1_300_000)
+st.sidebar.caption("Operational expenses: {:,}".format(OPERATIONAL_EXPENSES))
+DISCOUNT_RATE: float = st.sidebar.number_input("Discount Rate", min_value=0.15, max_value=0.45, value=0.22)
 MIN_FEE: int = 250_000 # st.sidebar.number_input("Min Management Fee", min_value=200_000, max_value=300_000, value=300_000)
 MAX_FEE: int = 15_000_000 # st.sidebar.number_input("Max Management Fee", min_value=10_000_000, max_value=20_000_000, value=15_000_000)
 # simulation_count = st.sidebar.number_input("Simulations", min_value=5, max_value=100_000, value=5)
 with st.sidebar:
-    with st.expander("Assumptions"):
-        simulation_count = st.number_input("Simulations", min_value=50, max_value=100_000, value=50)
-        st.caption(f"Risk Discount Rate:   {DISCOUNT_RATE*100}%")
-        st.caption(f"Variable Expenses:    {human_format(INVESTMENT_EXPENSES_PER_DEAL)} per Deal")
-        st.caption(f"Opex (Fixed Expenses):    {human_format(OPERATIONAL_EXPENSES)} per Annum")
-        st.caption(f"Opex inflation Per Annum:    {OPEX_INFLATION*100}%")
+    with st.expander("Hidden Variable"):
+        simulation_count = st.number_input("Simulations", min_value=50, max_value=1000, value=50)
+        # st.caption(f"Risk Discount Rate:   {DISCOUNT_RATE*100}%")
+        # st.caption(f"Variable Expenses:    {human_format(INVESTMENT_EXPENSES_PER_DEAL)} per Deal")
+        # st.caption(f"Opex (Fixed Expenses):    {human_format(OPERATIONAL_EXPENSES)} per Annum")
+        # st.caption(f"Opex inflation Per Annum:    {OPEX_INFLATION*100}%")
 
 # if 'test' not in st.session_state:
 #     st.session_state['test'] = 1
@@ -124,10 +132,12 @@ values = []
 def get_dist_tables(_type):
     global values
     selected_distribution = DIST_SELECTION[_type]
-    if selected_distribution == 4:
-        values = [4 for _ in range(4)]
-    elif selected_distribution == 3:
-        values = [3,3,4,4]
+    if selected_distribution == 7:
+        values = [7 for _ in range(4)]
+    elif selected_distribution == 6:
+        values = [6,6,7,7]
+    elif selected_distribution == 5:
+        values = [5,6,6,7]
     else:
         values = [selected_distribution, selected_distribution + 1, selected_distribution + 1, selected_distribution + 2]
     df, df1, df2, df3 = (get_dist_vars(x) for x in values)
@@ -246,7 +256,7 @@ def build_distribution_table():
     st.header("Launchpad Valuation Model")
     option = st.select_slider(
      'Incubation Success Ratio',
-     options=['60%', '70%', '80%', '90%', '95%'], value='70%')
+     options=['60%', '65%', '70%', '75%', '80%', '85%', '90%', '95%'], value='70%')
     # val = DIST_SELECTION[option] 
     df_main = get_dist_tables(option) #get_dist_vars(option)
     return df_main
@@ -348,7 +358,7 @@ def build_sim_metrics(x):
 
     net_valuation_incl_all_cycles_discounted = sum([net_invested[i]*pow(1+DISCOUNT_RATE, -i*5) for i in range(4)])
     with st.expander(f"Valuation Total (4 Cycles of {VALUATION_PERIOD} years each)", expanded =True):
-        st.markdown(f"<h4 style='text-align: center; color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>NPV in Year {VALUATION_PERIOD}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='text-align: center; color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>LP Valuation Conribution to GR</h4>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align: center; color: #FC766AFF ;padding-top: 0; padding-bottom: 3%; font-weight: 200'>{human_format(net_valuation_incl_all_cycles_discounted)}</h1>", unsafe_allow_html=True)
         # st.metric(f"NPV in Year {VALUATION_PERIOD}", net_valuation_incl_all_cycles_discounted)
     with st.expander("Headline Valuation per Investment Cycle (5 Year Cycles, Not Discounted)", expanded=True):
@@ -366,17 +376,18 @@ def build_sim_metrics(x):
             st.metric(f"Cycle 4 (Year {VALUATION_PERIOD*3+1} to {VALUATION_PERIOD*4})", human_format(net_invested[3]))
             st.caption(f"Incubation Success: {incubation_success_ratio_values[3]}")
 
-    with st.expander("Headline Net Valuation Result (Year 1 to 5 Only)", expanded=True):
+    with st.expander("Headline Net Valuation Result (Cycle 1)", expanded=True):
         st.metric("Launchpad + Guardrisk Value", human_format(net_invested[0]))
         col1, _, col3 = st.columns(3)
         with col1:
             fig
         with col3:
-            st.metric("Earnings Contribution to Total Valuation", human_format(valuation_man_fees_total[0]))
-            st.metric("Total Portfolio Equity Valuation", human_format(valuation_equity_total[0]))
-            st.metric("Total Invested", '(' + human_format(total_invested) + ')')
-            st.metric("Operational Expenses", '(' + human_format(variable_expenses) + ')')
-            st.metric("Variable Expenses (Per Deal)", '(' + human_format(opex_total) + ')')
+            st.markdown("<h4 style='color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>Totals (Cycle 1)</h4>", unsafe_allow_html=True)
+            st.metric("Earnings Contribution", human_format(valuation_man_fees_total[0]))
+            st.metric("Portfolio Equity Valuation", human_format(valuation_equity_total[0]))
+            st.metric("Amount Invested", '(' + human_format(total_invested) + ')')
+            st.metric("Operational Expenses", '(' + human_format(opex_total) + ')')
+            st.metric("Variable Expenses", '(' + human_format(variable_expenses) + ')')
         st.markdown(f"<h5 style='text-align: center; color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>Equity Cash-on-Cash Return Multiple</h5>", unsafe_allow_html=True)
         st.markdown(f"<h2 style='text-align: center; color: #FC766AFF ;padding-top: 0; padding-bottom: 3%; font-weight: 200'>{int(valuation_equity_total[0]/total_invested)}X</h2>", unsafe_allow_html=True)
         dist_graph_total_value = x['total_valuation_value'].hist(bins=30, backend='plotly')
