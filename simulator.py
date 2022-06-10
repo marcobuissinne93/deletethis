@@ -390,7 +390,10 @@ def build_sim_metrics(x):
             st.metric("Variable Expenses", '(' + human_format(variable_expenses) + ')')
         st.markdown(f"<h5 style='text-align: center; color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>Equity Cash-on-Cash Return Multiple</h5>", unsafe_allow_html=True)
         st.markdown(f"<h2 style='text-align: center; color: #FC766AFF ;padding-top: 0; padding-bottom: 3%; font-weight: 200'>{int(valuation_equity_total[0]/total_invested)}X</h2>", unsafe_allow_html=True)
-        dist_graph_total_value = x['total_valuation_value'].hist(bins=30, backend='plotly')
+        try:
+            dist_graph_total_value = x['total_valuation_value'].hist(bins=30, backend='plotly')
+        except:
+            dist_graph_total_value = x['total_valuation_value'].hist(bins=30, backend='plotly')
         dist_graph_total_value.update_layout(showlegend=False)
         dist_graph_total_value.update_layout(margin=go.layout.Margin(
             l=0, #left margin
