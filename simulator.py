@@ -358,7 +358,7 @@ def build_sim_metrics(x):
 
     net_valuation_incl_all_cycles_discounted = sum([net_invested[i]*pow(1+DISCOUNT_RATE, -i*5) for i in range(4)])
     with st.expander(f"Valuation Total (4 Cycles of {VALUATION_PERIOD} years each)", expanded =True):
-        st.markdown(f"<h4 style='text-align: center; color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>LP Valuation Conribution to GR</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='text-align: center; color: #FC766AFF; font-weight: lighter; padding-bottom: 0'>LP Valuation Contribution to GR</h4>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align: center; color: #FC766AFF ;padding-top: 0; padding-bottom: 3%; font-weight: 200'>{human_format(net_valuation_incl_all_cycles_discounted)}</h1>", unsafe_allow_html=True)
         # st.metric(f"NPV in Year {VALUATION_PERIOD}", net_valuation_incl_all_cycles_discounted)
     with st.expander("Headline Valuation per Investment Cycle (5 Year Cycles, Not Discounted)", expanded=True):
